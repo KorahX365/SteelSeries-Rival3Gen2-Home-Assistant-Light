@@ -1,0 +1,138 @@
+# Copia y pega este bloque en tu configuration.yaml de Home Assistant
+# Recuerda cambiar 'IP_DE_TU_PC' por la IP local de tu PC o tu IP de Tailscale
+
+input_boolean:
+  rival3_power:
+    name: "Rival 3 Estado"
+
+input_number:
+  rival3_h:
+    name: "Rival 3 Hue"
+    min: 0
+    max: 360
+    initial: 0
+  rival3_s:
+    name: "Rival 3 Saturation"
+    min: 0
+    max: 100
+    initial: 0
+  rival3_brightness:
+    name: "Rival 3 Brillo"
+    min: 0
+    max: 255
+    initial: 255
+
+rest_command:
+  rival3_base_color:
+    url: "http://<IP_DE_TU_PC>:5055/set_color"
+    method: POST
+    headers:
+      content-type: "application/json"
+    payload: >-
+      {
+        "r": {{ r | default(0) }},
+        "g": {{ g | default(0) }},
+        "b": {{ b | default(0) }}
+      }
+
+light:
+  - platform: template
+    lights:
+      rival3_luz_base:
+        friendly_name: "Rival 3 Luz Base"
+        unique_id: rival3_luz_base
+        value_template: "{{ is_state('input_boolean.rival3_power', 'on') }}"
+        level_template: "{{ states('input_number.rival3_brightness') | int }}"
+        hs_template: >-
+          ({{ states('input_number.rival3_h') | float }}, {{ states('input_number.rival3_s') | float }})
+        turn_on:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.rival3_power
+          - action: rest_command.rival3_base_color
+            data:
+              r: 255
+              g: 255
+              b: 255
+        turn_off:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.rival3_power
+          - action: rest_command.rival3_base_color
+            data:
+              r: 0
+              g: 0
+              b: 0
+        set_level:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.rival3_brightness
+            data:
+              value: "{{ level }}"
+          - action: rest_command.rival3_base_color
+            data:
+              r: "{{ level }}"
+              g: "{{ level }}"
+              b: "{{ level }}"
+        set_hs:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.rival3_h
+            data:
+              value: "{{ h }}"
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.rival3_s
+            data:
+              value: "{{ s }}"
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.rival3_power
+          - action: rest_command.rival3_base_color
+            data:
+              r: >-
+                {% set bri = (states('input_number.rival3_brightness') | default(255) | int) / 255.0 %}
+                {% set s_norm = (s | float) / 100.0 %}
+                {% if s_norm == 0 %}
+                  {{ (bri * 255) | int }}
+                {% else %}
+                  {% set c = bri * s_norm %}
+                  {% set x = c * (1 - (((h / 60.0) % 2) - 1) | abs) %}
+                  {% set m = bri - c %}
+                  {% if h < 60 %}{{ ((c + m) * 255) | int }}
+                  {% elif h < 120 %}{{ ((x + m) * 255) | int }}
+                  {% elif h < 180 %}{{ (m * 255) | int }}
+                  {% elif h < 240 %}{{ (m * 255) | int }}
+                  {% elif h < 300 %}{{ ((x + m) * 255) | int }}
+                  {% else %}{{ ((c + m) * 255) | int }}{% endif %}
+                {% endif %}
+              g: >-
+                {% set bri = (states('input_number.rival3_brightness') | default(255) | int) / 255.0 %}
+                {% set s_norm = (s | float) / 100.0 %}
+                {% if s_norm == 0 %}
+                  {{ (bri * 255) | int }}
+                {% else %}
+                  {% set c = bri * s_norm %}
+                  {% set x = c * (1 - (((h / 60.0) % 2) - 1) | abs) %}
+                  {% set m = bri - c %}
+                  {% if h < 60 %}{{ ((x + m) * 255) | int }}
+                  {% elif h < 120 %}{{ ((c + m) * 255) | int }}
+                  {% elif h < 180 %}{{ ((c + m) * 255) | int }}
+                  {% elif h < 240 %}{{ ((x + m) * 255) | int }}
+                  {% else %}{{ (m * 255) | int }}{% endif %}
+                {% endif %}
+              b: >-
+                {% set bri = (states('input_number.rival3_brightness') | default(255) | int) / 255.0 %}
+                {% set s_norm = (s | float) / 100.0 %}
+                {% if s_norm == 0 %}
+                  {{ (bri * 255) | int }}
+                {% else %}
+                  {% set c = bri * s_norm %}
+                  {% set x = c * (1 - (((h / 60.0) % 2) - 1) | abs) %}
+                  {% set m = bri - c %}
+                  {% if h < 120 %}{{ (m * 255) | int }}
+                  {% elif h < 180 %}{{ ((x + m) * 255) | int }}
+                  {% elif h < 240 %}{{ ((c + m) * 255) | int }}
+                  {% elif h < 300 %}{{ ((c + m) * 255) | int }}
+                  {% else %}{{ ((x + m) * 255) | int }}{% endif %}
+                {% endif %}

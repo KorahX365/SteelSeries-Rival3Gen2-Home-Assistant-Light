@@ -1,0 +1,5 @@
+# Logs y temporales de Windows
+*.log
+Thumbs.db
+desktop.ini
+.DS_Store
