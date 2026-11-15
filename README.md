@@ -214,3 +214,15 @@ light:
 Si alguna vez deseas eliminar el inicio automático del PC:
 - Ejecuta el archivo `uninstall_autostart.bat`.
 - Eliminará el acceso directo de la carpeta de inicio y cerrará el proceso activo.
+
+---
+
+## 📡 Alternativa: Modo MQTT Discovery + `rivalcfg` (sin editar YAML ni reiniciar HA)
+
+Si ya tienes un broker **MQTT** configurado en Home Assistant y prefieres **no tocar `configuration.yaml` ni reiniciar Home Assistant** (ni abrir puertos en el firewall de Windows), puedes usar el puente incluido en la carpeta [`mqtt_bridge/`](mqtt_bridge/):
+
+1. Copia [`mqtt_bridge/config.example.json`](mqtt_bridge/config.example.json) a `mqtt_bridge/config.json` y rellena la IP, puerto y credenciales de tu broker MQTT.
+2. Haz doble clic en [`mqtt_bridge/install_autostart.bat`](mqtt_bridge/install_autostart.bat) (crea automáticamente el entorno virtual Python, instala `paho-mqtt` y `rivalcfg`, y configura el arranque en segundo plano).
+3. El dispositivo **SteelSeries Rival 3 Gen 2** aparecerá automáticamente en **Ajustes > Dispositivos y servicios > MQTT** con:
+   - **Luz RGB** en tiempo real (GameSense).
+   - **Ajustes en memoria del ratón (`rivalcfg`)**: zonas individuales, brillo LED, DPI, polling rate, efecto arcoíris (incluyendo opción para desactivarlo y usar color fijo), luz al encender, botón superior y reseteo de fábrica.
